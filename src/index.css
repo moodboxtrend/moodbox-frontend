@@ -1,0 +1,117 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* DailyVibe light theme — soft lavender-white base, indigo/violet primary, amber accent */
+    --background: 250 40% 98%;
+    --foreground: 252 30% 12%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 252 30% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 252 30% 12%;
+
+    --primary: 255 86% 63%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 252 20% 95%;
+    --secondary-foreground: 252 30% 20%;
+
+    --accent: 38 100% 56%;
+    --accent-foreground: 252 30% 12%;
+
+    --muted: 252 20% 95%;
+    --muted-foreground: 252 12% 45%;
+
+    --destructive: 0 72% 58%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 152 60% 42%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 100% 50%;
+    --warning-foreground: 252 30% 12%;
+
+    --border: 252 20% 90%;
+    --input: 252 20% 90%;
+    --ring: 255 86% 63%;
+
+    --radius: 1rem;
+  }
+
+  .dark {
+    --background: 252 32% 7%;
+    --foreground: 250 25% 94%;
+
+    --card: 252 28% 10%;
+    --card-foreground: 250 25% 94%;
+
+    --popover: 252 28% 10%;
+    --popover-foreground: 250 25% 94%;
+
+    --primary: 255 90% 70%;
+    --primary-foreground: 252 32% 7%;
+
+    --secondary: 252 24% 15%;
+    --secondary-foreground: 250 25% 90%;
+
+    --accent: 38 100% 60%;
+    --accent-foreground: 252 32% 7%;
+
+    --muted: 252 24% 15%;
+    --muted-foreground: 250 12% 65%;
+
+    --destructive: 0 70% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 152 55% 48%;
+    --success-foreground: 252 32% 7%;
+
+    --warning: 38 100% 60%;
+    --warning-foreground: 252 32% 7%;
+
+    --border: 252 24% 18%;
+    --input: 252 24% 18%;
+    --ring: 255 90% 70%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-body antialiased;
+    background-image:
+      radial-gradient(circle at 15% 0%, hsl(var(--primary) / 0.10), transparent 40%),
+      radial-gradient(circle at 100% 20%, hsl(var(--accent) / 0.08), transparent 35%);
+    background-attachment: fixed;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display;
+  }
+}
+
+@layer utilities {
+  /* Signature surface treatment used across the admin — frosted glass cards */
+  .glass {
+    @apply bg-card/70 backdrop-blur-xl border border-white/20 dark:border-white/5 shadow-glass;
+  }
+
+  .glass-solid {
+    @apply bg-card border border-border shadow-sm;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply bg-muted-foreground/30 rounded-full;
+  }
+}
