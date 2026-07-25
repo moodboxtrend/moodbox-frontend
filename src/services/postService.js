@@ -23,6 +23,7 @@ export const postService = {
 
   bulkDelete: (ids) => api.post('/posts/bulk/delete', { ids }).then((r) => r.data),
   bulkStatus: (ids, status) => api.post('/posts/bulk/status', { ids, status }).then((r) => r.data),
+  resetViews: (ids, all = false) => api.post('/posts/reset-views', { ids, all }).then((r) => r.data),
 
   exportCsv: async (ids) => {
     const res = await api.post('/posts/export/csv', { ids }, { responseType: 'blob' });

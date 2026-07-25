@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Plus, Search, Pencil, Trash2, FileText, Download, CheckSquare, Star, TrendingUp,
+  Plus, Search, Pencil, Trash2, FileText, Download, CheckSquare, Star, TrendingUp, RotateCcw,
 } from 'lucide-react';
 import { PageHeader } from '@/components/common/PageHeader';
 import { EmptyState } from '@/components/common/EmptyState';
@@ -18,7 +18,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
 } from '@/components/ui/dropdown-menu';
-import { usePosts, useDeletePost, useBulkDeletePosts, useBulkUpdatePostStatus } from '@/hooks/usePosts';
+import { usePosts, useDeletePost, useBulkDeletePosts, useBulkUpdatePostStatus, useResetViews } from '@/hooks/usePosts';
 import { useCategoryDropdown } from '@/hooks/useCategories';
 import { useDebounce } from '@/hooks/useDebounce';
 import { postService } from '@/services/postService';
@@ -34,6 +34,7 @@ export default function PostsListPage() {
   const [selected, setSelected] = useState([]);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  const [resetViewsTarget, setResetViewsTarget] = useState(null);
 
   const debouncedSearch = useDebounce(search);
   const { data: categoriesRes } = useCategoryDropdown();
@@ -49,6 +50,7 @@ export default function PostsListPage() {
   const { mutateAsync: deletePost, isPending: deleting } = useDeletePost();
   const { mutateAsync: bulkDelete, isPending: bulkDeleting } = useBulkDeletePosts();
   const { mutate: bulkStatus } = useBulkUpdatePostStatus();
+  const { mutateAsync: resetViews, isPending: resettingViews } = useResetViews();
 
   const posts = data?.data || [];
   const meta = data?.meta;
@@ -62,9 +64,14 @@ export default function PostsListPage() {
         title="Posts"
         description="Manage jokes, recipes, and stories"
         actions={
-          <Button onClick={() => navigate('/posts/new')}>
-            <Plus className="h-4 w-4" /> New Post
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={() => setResetViewsTarget({ all: true })}>
+              <RotateCcw className="h-4 w-4" /> Reset All Views
+            </Button>
+            <Button onClick={() => navigate('/posts/new')}>
+              <Plus className="h-4 w-4" /> New Post
+            </Button>
+          </div>
         }
       />
 
@@ -119,6 +126,9 @@ export default function PostsListPage() {
             </Button>
             <Button size="sm" variant="outline" onClick={() => bulkStatus({ ids: selected, status: 'draft' })}>
               Mark as Draft
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => setResetViewsTarget({ ids: selected, count: selected.length })}>
+              <RotateCcw className="h-3.5 w-3.5" /> Reset Views ({selected.length})
             </Button>
             <Button size="sm" variant="destructive" onClick={() => setBulkDeleteOpen(true)}>
               <Trash2 className="h-3.5 w-3.5" /> Delete
@@ -191,6 +201,9 @@ export default function PostsListPage() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1">
+                        <Button variant="ghost" size="icon" title="Reset view count" onClick={() => setResetViewsTarget({ ids: [post._id], title: post.title })}>
+                          <RotateCcw className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                        </Button>
                         <Button variant="ghost" size="icon" onClick={() => navigate(`/posts/${post._id}/edit`)}>
                           <Pencil className="h-4 w-4" />
                         </Button>
@@ -230,6 +243,29 @@ export default function PostsListPage() {
           await bulkDelete(selected);
           setSelected([]);
           setBulkDeleteOpen(false);
+        }}
+      />
+
+      <ConfirmDialog
+        open={!!resetViewsTarget}
+        onOpenChange={(v) => !v && setResetViewsTarget(null)}
+        title={
+          resetViewsTarget?.all
+            ? 'Reset ALL post views to 0?'
+            : resetViewsTarget?.title
+            ? `Reset views for "${resetViewsTarget.title}"?`
+            : `Reset views for ${resetViewsTarget?.count || 0} selected posts?`
+        }
+        description={
+          resetViewsTarget?.all
+            ? 'This will set the view count of ALL posts across the entire app to 0. Future views in the app will start counting up from 0.'
+            : 'This will reset the view count of the selected post(s) to 0. Future views in the app will start counting up from 0.'
+        }
+        isLoading={resettingViews}
+        onConfirm={async () => {
+          await resetViews({ ids: resetViewsTarget.ids, all: resetViewsTarget.all });
+          setResetViewsTarget(null);
+          if (resetViewsTarget.ids) setSelected([]);
         }}
       />
     </div>

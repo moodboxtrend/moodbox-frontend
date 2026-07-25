@@ -22,8 +22,6 @@ export const STORY_TYPES = [
 
 export const AGE_RATINGS = ['All Ages', '13+', '18+'];
 
-export const JOKE_TYPES = ['Pun', 'One-liner', 'Story', 'Q&A', 'Dark', 'Clean'];
-
 export const LANGUAGES = ['Gujarati', 'Hindi', 'English'];
 
 export const CATEGORY_TYPE_COLORS = {

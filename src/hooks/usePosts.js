@@ -75,3 +75,17 @@ export const useBulkUpdatePostStatus = () => {
     onError: (err) => toast.error(err.response?.data?.message || 'Bulk update failed'),
   });
 };
+
+export const useResetViews = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ ids, all }) => postService.resetViews(ids, all),
+    onSuccess: (res) => {
+      qc.invalidateQueries({ queryKey: ['posts'] });
+      qc.invalidateQueries({ queryKey: ['analytics'] });
+      qc.invalidateQueries({ queryKey: ['dashboard'] });
+      toast.success(res.message || 'Views reset to 0');
+    },
+    onError: (err) => toast.error(err.response?.data?.message || 'Failed to reset views'),
+  });
+};

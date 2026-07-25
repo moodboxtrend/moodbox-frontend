@@ -144,7 +144,6 @@ export default function PostFormPage() {
       formData.append('ageRating', s.ageRating || 'All Ages');
     } else if (values.contentType === 'joke') {
       const j = values.jokeDetails || {};
-      formData.append('jokeType', j.jokeType || '');
       formData.append('language', j.language || '');
     } else if (values.contentType === 'wallpaper') {
       const w = values.wallpaperDetails || {};
