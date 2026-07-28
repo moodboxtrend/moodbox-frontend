@@ -3,15 +3,55 @@ import { X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 
-export function TagInput({ value = [], onChange, placeholder = 'Type and press Enter' }) {
+export function TagInput({ value = [], onChange, placeholder = 'Type tags (comma separated)' }) {
   const [input, setInput] = useState('');
 
-  const addTag = () => {
-    const tag = input.trim();
-    if (tag && !value.includes(tag)) {
-      onChange([...value, tag]);
+  const processInputText = (text) => {
+    if (!text) return;
+    const parts = text.split(',');
+    const newTags = [];
+    const currentList = [...value];
+
+    parts.forEach((part) => {
+      const trimmed = part.trim();
+      if (trimmed && !currentList.includes(trimmed) && !newTags.includes(trimmed)) {
+        newTags.push(trimmed);
+        currentList.push(trimmed);
+      }
+    });
+
+    if (newTags.length > 0) {
+      onChange(currentList);
     }
-    setInput('');
+  };
+
+  const handleInputChange = (e) => {
+    const val = e.target.value;
+    if (val.includes(',')) {
+      const parts = val.split(',');
+      const trailing = parts.pop();
+      processInputText(parts.join(','));
+      setInput(trailing);
+    } else {
+      setInput(val);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === ',' || e.key === 'Enter') {
+      e.preventDefault();
+      if (input.trim()) {
+        processInputText(input);
+        setInput('');
+      }
+    }
+  };
+
+  const handleBlur = () => {
+    if (input.trim()) {
+      processInputText(input);
+      setInput('');
+    }
   };
 
   const removeTag = (tag) => onChange(value.filter((t) => t !== tag));
@@ -28,17 +68,13 @@ export function TagInput({ value = [], onChange, placeholder = 'Type and press E
       ))}
       <Input
         value={input}
-        onChange={(e) => setInput(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ',') {
-            e.preventDefault();
-            addTag();
-          }
-        }}
-        onBlur={addTag}
+        onChange={handleInputChange}
+        onKeyDown={handleKeyDown}
+        onBlur={handleBlur}
         placeholder={value.length === 0 ? placeholder : ''}
         className="border-0 shadow-none h-7 flex-1 min-w-[120px] px-1 focus-visible:ring-0"
       />
     </div>
   );
 }
+

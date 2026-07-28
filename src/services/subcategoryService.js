@@ -7,5 +7,7 @@ export const subcategoryService = {
   create: (payload) => api.post('/subcategories', payload).then((r) => r.data),
   update: (id, payload) => api.put(`/subcategories/${id}`, payload).then((r) => r.data),
   toggleStatus: (id) => api.patch(`/subcategories/${id}/status`).then((r) => r.data),
+  reorder: (items) => api.patch('/subcategories/reorder', items).then((r) => r.data),
   remove: (id) => api.delete(`/subcategories/${id}`).then((r) => r.data),
 };
+

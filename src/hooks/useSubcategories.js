@@ -65,3 +65,17 @@ export const useDeleteSubcategory = () => {
     onError: (err) => toast.error(err.response?.data?.message || 'Failed to delete subcategory'),
   });
 };
+
+export const useReorderSubcategories = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: subcategoryService.reorder,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['subcategories'] });
+      qc.invalidateQueries({ queryKey: ['subcategories-dropdown'] });
+      toast.success('Subcategories reordered successfully');
+    },
+    onError: (err) => toast.error(err.response?.data?.message || 'Failed to reorder subcategories'),
+  });
+};
+
