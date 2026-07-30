@@ -139,11 +139,15 @@ export default function PostFormPage() {
     } else if (values.contentType === 'story') {
       const s = values.storyDetails || {};
       formData.append('readingTime', s.readingTime || 0);
-      formData.append('storyType', s.storyType || '');
+      if (s.storyType && s.storyType.trim() !== '') {
+        formData.append('storyType', s.storyType);
+      }
       formData.append('ageRating', s.ageRating || 'All Ages');
     } else if (values.contentType === 'joke') {
       const j = values.jokeDetails || {};
-      formData.append('language', j.language || '');
+      if (j.language && j.language.trim() !== '') {
+        formData.append('language', j.language);
+      }
     } else if (values.contentType === 'wallpaper') {
       const w = values.wallpaperDetails || {};
       formData.append('resolution', w.resolution || '1080x1920');
