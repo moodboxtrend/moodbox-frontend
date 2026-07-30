@@ -4,10 +4,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
-import { DIFFICULTY_LEVELS } from '@/constants/app';
 
-export function RecipeExtraFields({ register, control, watch, setValue }) {
+export function RecipeExtraFields({ register, control }) {
   const { fields: ingredientFields, append: appendIngredient, remove: removeIngredient } = useFieldArray({
     control, name: 'recipeDetails.ingredients',
   });
@@ -15,11 +13,9 @@ export function RecipeExtraFields({ register, control, watch, setValue }) {
     control, name: 'recipeDetails.steps',
   });
 
-  const difficulty = watch('recipeDetails.difficulty');
-
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="space-y-1.5">
           <Label>Prep Time (min)</Label>
           <Input type="number" {...register('recipeDetails.prepTime')} />
@@ -31,15 +27,6 @@ export function RecipeExtraFields({ register, control, watch, setValue }) {
         <div className="space-y-1.5">
           <Label>Servings</Label>
           <Input type="number" {...register('recipeDetails.servings')} />
-        </div>
-        <div className="space-y-1.5">
-          <Label>Difficulty</Label>
-          <Select value={difficulty} onValueChange={(v) => setValue('recipeDetails.difficulty', v)}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              {DIFFICULTY_LEVELS.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
-            </SelectContent>
-          </Select>
         </div>
       </div>
 

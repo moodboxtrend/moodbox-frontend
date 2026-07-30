@@ -19,7 +19,6 @@ import { useSubcategoryDropdown } from '@/hooks/useSubcategories';
 import { usePost, useCreatePost, useUpdatePost } from '@/hooks/usePosts';
 import { CONTENT_TYPES } from '@/constants/app';
 import { RecipeExtraFields } from './RecipeExtraFields';
-import { StoryExtraFields } from './StoryExtraFields';
 import { JokeExtraFields } from './JokeExtraFields';
 import { WallpaperExtraFields } from './WallpaperExtraFields';
 import { VideoExtraFields } from './VideoExtraFields';
@@ -244,12 +243,11 @@ export default function PostFormPage() {
             </CardContent>
           </Card>
 
-          {contentType !== 'general' && (
+          {contentType !== 'general' && contentType !== 'story' && (
             <Card>
               <CardContent className="p-6">
                 <h3 className="font-display font-semibold mb-4 capitalize">{contentType} Details</h3>
-                {contentType === 'recipe' && <RecipeExtraFields register={register} control={control} watch={watch} setValue={setValue} />}
-                {contentType === 'story' && <StoryExtraFields register={register} watch={watch} setValue={setValue} />}
+                {contentType === 'recipe' && <RecipeExtraFields register={register} control={control} />}
                 {contentType === 'joke' && <JokeExtraFields watch={watch} setValue={setValue} />}
                 {contentType === 'wallpaper' && <WallpaperExtraFields register={register} watch={watch} setValue={setValue} />}
                 {contentType === 'video' && (
