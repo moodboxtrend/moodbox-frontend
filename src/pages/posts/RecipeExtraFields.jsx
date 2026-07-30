@@ -1,18 +1,123 @@
-import { useFieldArray } from 'react-hook-form';
-import { Plus, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import { Controller } from 'react-hook-form';
+import { Plus, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+
+function CommaSeparatedItemInput({
+  items = [],
+  onChange,
+  placeholder = 'Type item (comma separated)',
+  showIndex = false,
+  badgeVariant = 'secondary',
+}) {
+  const [inputText, setInputText] = useState('');
+
+  const processText = (text) => {
+    if (!text) return;
+    const parts = text.split(/[,|\n]+/);
+    const validParts = parts.map((p) => p.trim()).filter((p) => p.length > 0);
+
+    if (validParts.length > 0) {
+      onChange([...items, ...validParts]);
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const val = e.target.value;
+    if (val.includes(',') || val.includes('\n')) {
+      const parts = val.split(/[,|\n]+/);
+      const trailing = parts.pop() || '';
+      processText(parts.join(','));
+      setInputText(trailing);
+    } else {
+      setInputText(val);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === ',' || e.key === 'Enter') {
+      e.preventDefault();
+      if (inputText.trim()) {
+        processText(inputText);
+        setInputText('');
+      }
+    }
+  };
+
+  const handleBlur = () => {
+    if (inputText.trim()) {
+      processText(inputText);
+      setInputText('');
+    }
+  };
+
+  const handleAddClick = () => {
+    if (inputText.trim()) {
+      processText(inputText);
+      setInputText('');
+    }
+  };
+
+  const removeItem = (indexToRemove) => {
+    onChange(items.filter((_, idx) => idx !== indexToRemove));
+  };
+
+  return (
+    <div className="space-y-2">
+      <div className="flex gap-2">
+        <Input
+          value={inputText}
+          onChange={handleInputChange}
+          onKeyDown={handleKeyDown}
+          onBlur={handleBlur}
+          placeholder={placeholder}
+          className="flex-1"
+        />
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={handleAddClick}
+          disabled={!inputText.trim()}
+        >
+          <Plus className="h-4 w-4 mr-1" /> Add
+        </Button>
+      </div>
+
+      {items.length > 0 ? (
+        <div className="flex flex-wrap gap-2 pt-1 max-h-60 overflow-y-auto p-1">
+          {items.map((item, idx) => (
+            <Badge
+              key={idx}
+              variant={badgeVariant}
+              className="py-1.5 px-3 text-sm font-normal gap-2 flex items-center max-w-full break-words"
+            >
+              <span>
+                {showIndex && <strong className="mr-1 opacity-75">Step {idx + 1}:</strong>}
+                {item}
+              </span>
+              <button
+                type="button"
+                onClick={() => removeItem(idx)}
+                className="hover:bg-muted p-0.5 rounded-full text-muted-foreground hover:text-foreground transition-colors shrink-0"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </Badge>
+          ))}
+        </div>
+      ) : (
+        <p className="text-xs text-muted-foreground">No items added yet</p>
+      )}
+    </div>
+  );
+}
 
 export function RecipeExtraFields({ register, control }) {
-  const { fields: ingredientFields, append: appendIngredient, remove: removeIngredient } = useFieldArray({
-    control, name: 'recipeDetails.ingredients',
-  });
-  const { fields: stepFields, append: appendStep, remove: removeStep } = useFieldArray({
-    control, name: 'recipeDetails.steps',
-  });
-
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -30,51 +135,80 @@ export function RecipeExtraFields({ register, control }) {
         </div>
       </div>
 
-      <div>
-        <div className="flex items-center justify-between mb-2">
-          <Label>Ingredients</Label>
-          <Button type="button" size="sm" variant="outline" onClick={() => appendIngredient({ name: '', quantity: '' })}>
-            <Plus className="h-3.5 w-3.5" /> Add ingredient
-          </Button>
-        </div>
-        <div className="space-y-2">
-          {ingredientFields.map((field, index) => (
-            <div key={field.id} className="flex gap-2">
-              <Input placeholder="Ingredient name" {...register(`recipeDetails.ingredients.${index}.name`)} className="flex-1" />
-              <Input placeholder="Quantity (e.g. 2 cups)" {...register(`recipeDetails.ingredients.${index}.quantity`)} className="w-40" />
-              <Button type="button" variant="ghost" size="icon" onClick={() => removeIngredient(index)}>
-                <Trash2 className="h-4 w-4 text-destructive" />
-              </Button>
-            </div>
-          ))}
-          {ingredientFields.length === 0 && <p className="text-xs text-muted-foreground">No ingredients added yet</p>}
-        </div>
+      <div className="space-y-1.5">
+        <Label>Ingredients (Comma separated)</Label>
+        <Controller
+          control={control}
+          name="recipeDetails.ingredients"
+          render={({ field }) => {
+            const currentStrings = (field.value || [])
+              .map((item) => {
+                if (typeof item === 'string') return item;
+                if (!item) return '';
+                const name = item.name || '';
+                const qty = item.quantity || '';
+                return qty ? `${qty} ${name}`.trim() : name.trim();
+              })
+              .filter(Boolean);
+
+            const handleChange = (newStrings) => {
+              const formattedIngredients = newStrings.map((str) => ({
+                name: str.trim(),
+                quantity: '',
+              }));
+              field.onChange(formattedIngredients);
+            };
+
+            return (
+              <CommaSeparatedItemInput
+                items={currentStrings}
+                onChange={handleChange}
+                placeholder="Add ingredients separated by commas (e.g. 1 cup flour, 2 eggs, 1 tsp salt)"
+                badgeVariant="secondary"
+              />
+            );
+          }}
+        />
+        <p className="text-xs text-muted-foreground">
+          Type ingredients separated by commas (or press Enter after each item).
+        </p>
       </div>
 
-      <div>
-        <div className="flex items-center justify-between mb-2">
-          <Label>Cooking Steps</Label>
-          <Button
-            type="button" size="sm" variant="outline"
-            onClick={() => appendStep({ step: stepFields.length + 1, instruction: '' })}
-          >
-            <Plus className="h-3.5 w-3.5" /> Add step
-          </Button>
-        </div>
-        <div className="space-y-2">
-          {stepFields.map((field, index) => (
-            <div key={field.id} className="flex gap-2 items-start">
-              <span className="mt-2.5 h-6 w-6 shrink-0 rounded-full bg-primary/10 text-primary text-xs flex items-center justify-center font-medium">
-                {index + 1}
-              </span>
-              <Textarea placeholder="Describe this step…" rows={2} {...register(`recipeDetails.steps.${index}.instruction`)} className="flex-1" />
-              <Button type="button" variant="ghost" size="icon" onClick={() => removeStep(index)}>
-                <Trash2 className="h-4 w-4 text-destructive" />
-              </Button>
-            </div>
-          ))}
-          {stepFields.length === 0 && <p className="text-xs text-muted-foreground">No steps added yet</p>}
-        </div>
+      <div className="space-y-1.5">
+        <Label>Cooking Steps (Comma separated)</Label>
+        <Controller
+          control={control}
+          name="recipeDetails.steps"
+          render={({ field }) => {
+            const currentStrings = (field.value || [])
+              .map((item) => {
+                if (typeof item === 'string') return item;
+                return item?.instruction || '';
+              })
+              .filter(Boolean);
+
+            const handleChange = (newStrings) => {
+              const formattedSteps = newStrings.map((str, index) => ({
+                step: index + 1,
+                instruction: str.trim(),
+              }));
+              field.onChange(formattedSteps);
+            };
+
+            return (
+              <CommaSeparatedItemInput
+                items={currentStrings}
+                onChange={handleChange}
+                placeholder="Add cooking steps separated by commas (e.g. Boil water, Add tea leaves, Serve hot)"
+                showIndex={true}
+                badgeVariant="outline"
+              />
+            );
+          }}
+        />
+        <p className="text-xs text-muted-foreground">
+          Type cooking steps separated by commas (or press Enter after each step).
+        </p>
       </div>
 
       <div className="space-y-1.5">
@@ -94,3 +228,4 @@ export function RecipeExtraFields({ register, control }) {
     </div>
   );
 }
+
